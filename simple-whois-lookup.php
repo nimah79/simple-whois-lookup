@@ -12,8 +12,14 @@ function isDomainAvailable($domain) {
     $xml = simplexml_load_file(__DIR__.'/whois-server-list.xml');
     $server = xml2array($xml->xpath('/domainList/domain[@name="'.$tld.'"]'));
     if(!empty($server)) {
-        $whois_server = $server[0]['whoisServer']['@attributes']['host'];
-        $available_pattern = $server[0]['whoisServer']['availablePattern'];
+        if(isset($server[0]['whoisServer']['@attributes']['host'])) {
+            $whois_server = $server[0]['whoisServer']['@attributes']['host'];
+            $available_pattern = $server[0]['whoisServer']['availablePattern'];
+        }
+        else {
+            $whois_server = xml2array($server[0]['whoisServer'][0])['@attributes']['host'];
+            $available_pattern = xml2array($server[0]['whoisServer'][0])['availablePattern'];
+        }
         $fp = @fsockopen($whois_server, 43, $errno, $errstr, 10) or die('Socket Error '.$errno.' - '.$errstr);
         fputs($fp, $domain."\r\n");
         $result = '';
